@@ -35,7 +35,7 @@ class KalmanFilter:
 
 
 class SageHusaAdaptiveKalmanFilter:
-    def __init__(self, Q=1, R=5, softstartskip=0):
+    def __init__(self, Q=1, R=5, softstartskip=0, jumpthres=None):
         self.Q = Q
         self.R = R
         self.q = 0
@@ -44,8 +44,17 @@ class SageHusaAdaptiveKalmanFilter:
         self.x_last = 0
         self.time = 1
         self.skip = softstartskip
+        # jumpthres应该设置为一个较大且明显不合理的值
+        self.jumpthres = jumpthres  # (鲁棒性有待验证)
 
     def predict(self, Z):
+        if self.time - 1 > self.skip and \
+                self.jumpthres is not None and \
+                abs(Z - self.x_last) > self.jumpthres:
+            print('\n\n[WARNING_KF] Experimental function: jumpthres {} over at {}.\n\n'.
+                  format(self.jumpthres, abs(Z - self.x_last)))
+            return self.x_last
+
         a = 1
         b = 0
         c = 1
