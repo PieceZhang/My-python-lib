@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class KalmanFilter:
@@ -35,7 +36,7 @@ class KalmanFilter:
 
 
 class SageHusaAdaptiveKalmanFilter:
-    def __init__(self, Q=1, R=5, softstartskip=0, jumpthres=None):
+    def __init__(self, Q=1, R=10, softstartskip=0, jumpthres=None):
         self.Q = Q
         self.R = R
         self.q = 0
@@ -44,10 +45,12 @@ class SageHusaAdaptiveKalmanFilter:
         self.x_last = 0
         self.time = 1
         self.skip = softstartskip
+        self.xlog = []
+        self.Zlog = []
         # jumpthres应该设置为一个较大且明显不合理的值
         self.jumpthres = jumpthres  # (鲁棒性有待验证)
 
-    def predict(self, Z):
+    def predict(self, Z, visual=False):
         if self.time - 1 > self.skip and \
                 self.jumpthres is not None and \
                 abs(Z - self.x_last) > self.jumpthres:
@@ -59,7 +62,7 @@ class SageHusaAdaptiveKalmanFilter:
         b = 0
         c = 1
 
-        beta = 0.00001
+        beta = 0.0001
         alpha = 100
 
         # 预测步
@@ -83,6 +86,15 @@ class SageHusaAdaptiveKalmanFilter:
         self.p_last = p
         self.x_last = x
         self.time += 1
+
+        if visual:
+            self.xlog.append(x)
+            self.Zlog.append(Z)
+            t = np.linspace(0, len(self.xlog), len(self.xlog))
+            plt.clf()
+            plt.plot(t, self.xlog)
+            plt.plot(t, self.Zlog)
+            plt.show()
 
         if self.time - 1 > self.skip:
             return x
