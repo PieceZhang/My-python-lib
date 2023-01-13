@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from functools import partial
 
 class KalmanFilter:
     def __init__(self, Q=1, R=5):
@@ -100,3 +100,13 @@ class SageHusaAdaptiveKalmanFilter:
             return x
         else:
             return Z
+
+
+class KalmanFilterPack:
+    def __init__(self, num):
+        self.num = num
+        self.kflist = [SageHusaAdaptiveKalmanFilter(softstartskip=50) for _ in range(self.num)]
+
+    def predict(self, Z) -> list:
+        assert len(Z) == self.num
+        return [self.kflist[i].predict(Z[i]) for i in range(self.num)]
